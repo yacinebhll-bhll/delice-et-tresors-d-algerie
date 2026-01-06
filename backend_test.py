@@ -1055,16 +1055,16 @@ class DelicesAlgerieAPITester:
         return success1 and success2 and success3
 
     def test_customization_public(self):
-        """Test public customization endpoint"""
+        """Test public customization endpoint (P1 feature)"""
         success, response = self.run_test(
-            "Get Public Customization",
+            "P1 - Get Public Customization",
             "GET",
             "customization",
             200
         )
         
         if success and response:
-            # Verify required fields are present
+            # Verify required fields are present for P2 - Dynamic Styles
             required_fields = ['site_name', 'primary_color', 'secondary_color', 'accent_color', 'font_heading', 'font_body']
             if all(field in response for field in required_fields):
                 print(f"   Site name: {response.get('site_name', 'N/A')}")
@@ -1073,6 +1073,9 @@ class DelicesAlgerieAPITester:
                 print(f"   Accent color: {response.get('accent_color', 'N/A')}")
                 print(f"   Heading font: {response.get('font_heading', 'N/A')}")
                 print(f"   Body font: {response.get('font_body', 'N/A')}")
+                
+                # Store for P2 verification
+                self.customization_data = response
                 return True
             else:
                 print(f"❌ Missing required customization fields. Got: {list(response.keys())}")
