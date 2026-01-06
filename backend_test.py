@@ -1107,12 +1107,12 @@ class DelicesAlgerieAPITester:
         return False
 
     def test_customization_admin_update(self):
-        """Test admin customization UPDATE endpoint"""
+        """Test admin customization UPDATE endpoint (P1 feature)"""
         if not self.admin_token:
             print("❌ Cannot test admin customization update - no admin token")
             return False
         
-        # Test updating colors and site name
+        # Test updating colors and fonts for P1 and P2 features
         update_data = {
             "site_name": "Délices et Trésors d'Algérie - Test",
             "primary_color": "#FF5733",  # Change to orange-red for testing
@@ -1123,7 +1123,7 @@ class DelicesAlgerieAPITester:
         }
         
         success, response = self.run_test(
-            "Update Admin Customization",
+            "P1 - Update Admin Customization",
             "PUT",
             "admin/customization",
             200,
@@ -1142,6 +1142,8 @@ class DelicesAlgerieAPITester:
                 print(f"   New primary color: {response.get('primary_color')}")
                 print(f"   New secondary color: {response.get('secondary_color')}")
                 print(f"   New accent color: {response.get('accent_color')}")
+                print(f"   New heading font: {response.get('font_heading')}")
+                print(f"   New body font: {response.get('font_body')}")
                 return True
             else:
                 print(f"❌ Customization not updated correctly")
