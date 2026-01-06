@@ -23,7 +23,8 @@ import {
   Tag,
   Package,
   Search,
-  Phone
+  Phone,
+  FolderOpen
 } from 'lucide-react';
 
 const AdminLayout = ({ children }) => {
