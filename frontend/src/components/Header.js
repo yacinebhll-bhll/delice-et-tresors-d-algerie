@@ -60,15 +60,26 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 flex-shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-r from-olive to-green-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">DT</span>
-            </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:block">
-              {language === 'ar' ? 
+            {customization.logo_url ? (
+              <img 
+                src={customization.logo_url} 
+                alt="Logo" 
+                className="h-10 w-auto object-contain"
+              />
+            ) : (
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)` }}
+              >
+                <span className="text-white font-bold text-lg">DT</span>
+              </div>
+            )}
+            <span className="text-lg sm:text-xl font-bold text-gray-900 hidden sm:block" style={{ fontFamily: 'var(--font-heading)' }}>
+              {customization.site_name || (language === 'ar' ? 
                 'لذائذ وكنوز الجزائر' :
                 language === 'en' ?
                 'Delights & Treasures' :
-                'Délices et Trésors'}
+                'Délices et Trésors')}
             </span>
           </Link>
 
