@@ -1780,6 +1780,61 @@ class DelicesAlgerieAPITester:
         
         return True
 
+    def run_p1_p2_p3_tests(self):
+        """Run comprehensive P1, P2, P3 feature tests for Délices et Trésors d'Algérie"""
+        print("\n🎨 Starting P1, P2, P3 Feature Tests")
+        print("=" * 50)
+        
+        # Test admin authentication first
+        if not self.test_admin_login():
+            print("❌ Admin login failed - cannot test P1, P2, P3 functionality")
+            return False
+        
+        # Test P1 - Admin Customization API
+        print("\n📝 Testing P1 - Admin Customization API")
+        p1_results = []
+        p1_results.append(self.test_customization_public())
+        p1_results.append(self.test_customization_admin_get())
+        p1_results.append(self.test_customization_admin_update())
+        
+        # Test P2 - Dynamic Styles (verify changes are reflected)
+        print("\n🎨 Testing P2 - Dynamic Styles")
+        p2_results = []
+        p2_results.append(self.test_customization_public_reflects_changes())
+        
+        # Test P3 - Media Library API
+        print("\n📁 Testing P3 - Media Library API")
+        p3_results = []
+        p3_results.append(self.test_media_library_get())
+        p3_results.append(self.test_media_library_upload())
+        p3_results.append(self.test_media_library_delete())
+        p3_results.append(self.test_media_library_upload_various_types())
+        
+        # Test Download Archives
+        print("\n📦 Testing Download Archives")
+        archive_result = self.test_download_archives()
+        
+        # Restore original customization
+        print("\n🔄 Restoring Original Settings")
+        self.test_customization_restore_original()
+        
+        # Test unauthorized access
+        print("\n🔒 Testing Security")
+        self.test_customization_unauthorized_access()
+        
+        # Summary
+        p1_passed = sum(p1_results)
+        p2_passed = sum(p2_results)
+        p3_passed = sum(p3_results)
+        
+        print(f"\n📊 P1, P2, P3 Test Results:")
+        print(f"   P1 - Admin Customization API: {p1_passed}/{len(p1_results)} tests passed")
+        print(f"   P2 - Dynamic Styles: {p2_passed}/{len(p2_results)} tests passed")
+        print(f"   P3 - Media Library API: {p3_passed}/{len(p3_results)} tests passed")
+        print(f"   Download Archives: {'✅' if archive_result else '❌'}")
+        
+        return all(p1_results) and all(p2_results) and all(p3_results) and archive_result
+
     def run_ecommerce_tests(self):
         """Run comprehensive e-commerce tests for Délices et Trésors d'Algérie"""
         print("\n🛒 Starting E-commerce Tests")
