@@ -208,6 +208,18 @@ const AuthPage = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {isLogin && (
+                <div className="text-right mt-2">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                  >
+                    {language === 'ar' ? 'نسيت كلمة المرور؟' :
+                     language === 'en' ? 'Forgot password?' :
+                     'Mot de passe oublié ?'}
+                  </Link>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
