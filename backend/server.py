@@ -2537,12 +2537,20 @@ async def root():
 # Include the router in the main app
 app.include_router(api_router)
 
+# CORS Configuration for custom domains
+cors_origins_str = os.environ.get('CORS_ORIGINS', '')
+if cors_origins_str == '*':
+    cors_origins = ['*']
+else:
+    cors_origins = [origin.strip() for origin in cors_origins_str.split(',') if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Configure logging
