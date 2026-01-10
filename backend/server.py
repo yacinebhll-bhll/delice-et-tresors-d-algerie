@@ -785,8 +785,11 @@ def send_password_reset_email(email: str, full_name: str, token: str):
             cors_origins = os.environ.get('CORS_ORIGINS', '')
             if cors_origins and cors_origins != '*':
                 frontend_url = cors_origins.split(',')[0].strip()
-            else:
-                frontend_url = 'https://ecommerce-admin-29.preview.emergentagent.com'
+        
+        if not frontend_url:
+            logger.error("FRONTEND_URL not configured - password reset email cannot be sent")
+            return
+            
         reset_link = f"{frontend_url}/reset-password?token={token}"
         
         subject = "Réinitialisation de votre mot de passe - Délices et Trésors d'Algérie"
