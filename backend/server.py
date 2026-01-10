@@ -850,8 +850,10 @@ L'équipe Délices et Trésors d'Algérie
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
                 
                 <p style="color: #999; font-size: 12px; text-align: center;">
-                    Cet email a été envoyé par Délices et Trésors d'Algérie.<br>
-                    Si le bouton ne fonctionne pas, copiez ce lien : {reset_link}
+                    Cet email a été envoyé par <a href="{frontend_url}" style="color: #6B8E23;">Délices et Trésors d'Algérie</a><br>
+                    Site web : <a href="{frontend_url}" style="color: #6B8E23;">{frontend_url.replace('https://', '').replace('http://', '')}</a><br><br>
+                    Si le bouton ne fonctionne pas, copiez ce lien :<br>
+                    <a href="{reset_link}" style="color: #F59E0B; word-break: break-all;">{reset_link}</a>
                 </p>
             </div>
         </body>
