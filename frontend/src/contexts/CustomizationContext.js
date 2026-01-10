@@ -51,6 +51,7 @@ export const CustomizationProvider = ({ children }) => {
 
   const applyStyles = (settings) => {
     const root = document.documentElement;
+    if (!root) return;
     
     // Apply colors as CSS variables
     if (settings.primary_color) {
@@ -76,9 +77,13 @@ export const CustomizationProvider = ({ children }) => {
       loadGoogleFont(settings.font_body);
     }
     
-    // Apply favicon if set
+    // Apply favicon if set (with defensive check)
     if (settings.favicon_url) {
-      updateFavicon(settings.favicon_url);
+      try {
+        updateFavicon(settings.favicon_url);
+      } catch (e) {
+        console.warn('Failed to update favicon:', e);
+      }
     }
   };
 
