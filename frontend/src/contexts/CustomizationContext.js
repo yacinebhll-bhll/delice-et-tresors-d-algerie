@@ -95,23 +95,41 @@ export const CustomizationProvider = ({ children }) => {
   };
 
   const loadGoogleFont = (fontName) => {
-    const existingLink = document.querySelector(`link[href*="${fontName.replace(' ', '+')}"]`);
-    if (existingLink) return;
+    if (!fontName || typeof document === 'undefined') return;
+    
+    try {
+      const existingLink = document.querySelector(`link[href*="${fontName.replace(' ', '+')}"]`);
+      if (existingLink) return;
 
-    const link = document.createElement('link');
-    link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
+      const link = document.createElement('link');
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
+      link.rel = 'stylesheet';
+      if (document.head) {
+        document.head.appendChild(link);
+      }
+    } catch (e) {
+      console.warn('Failed to load Google Font:', e);
+    }
   };
 
   const updateFavicon = (url) => {
-    let link = document.querySelector("link[rel*='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.head.appendChild(link);
+    if (!url || typeof document === 'undefined') return;
+    
+    try {
+      let link = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        if (document.head) {
+          document.head.appendChild(link);
+        }
+      }
+      if (link) {
+        link.href = url;
+      }
+    } catch (e) {
+      console.warn('Failed to update favicon:', e);
     }
-    link.href = url;
   };
 
   const refreshCustomization = async () => {
