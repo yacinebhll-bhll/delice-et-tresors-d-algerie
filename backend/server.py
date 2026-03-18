@@ -2564,11 +2564,14 @@ logger = logging.getLogger(__name__)
 
 # Include extended routes
 try:
-    from routes_extended import router as extended_router
+    from routes_extended import router as extended_router, init_routes
+    init_routes(db, SECRET_KEY)
     app.include_router(extended_router)
     logger.info("Extended e-commerce routes loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load extended routes: {e}")
+    import traceback
+    traceback.print_exc()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

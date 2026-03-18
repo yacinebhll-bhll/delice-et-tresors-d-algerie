@@ -119,6 +119,90 @@ backend:
         agent: "testing"
         comment: "✅ Admin endpoints properly protected. Unauthorized access to /api/admin/customization returns 403 Forbidden as expected."
 
+  - task: "Extended E-commerce API - Reviews endpoints"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Reviews endpoints working correctly. GET /api/products/{product_id}/reviews supports all filters (rating, has_photo, verified_only, sort options). Pagination working with skip/limit parameters. POST /api/reviews creates reviews successfully with authentication. POST /api/reviews/{review_id}/helpful works for helpful voting system."
+
+  - task: "Extended E-commerce API - Wishlist endpoints"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Wishlist endpoints working correctly. GET /api/wishlist returns user wishlist with authentication. POST /api/wishlist adds items successfully. DELETE /api/wishlist/{product_id} removes items correctly. Proper user authentication required."
+
+  - task: "Extended E-commerce API - Stock Alerts"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Stock alerts working correctly. POST /api/stock-alerts creates alerts with email and product_id. GET /api/admin/stock-alerts returns pending alerts for admin users. Alert creation verified with proper response structure."
+
+  - task: "Extended E-commerce API - Shipping Calculator"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Shipping calculator working correctly. POST /api/shipping/calculate handles items array and destination country. Returns standard/express shipping options with prices, delivery days. Free shipping threshold calculation working (50 EUR default). Weight-based pricing brackets implemented."
+
+  - task: "Extended E-commerce API - Regions/Origins"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Regions/Origins endpoints working correctly. GET /api/regions returns 3 regions with coordinates. GET /api/regions/{region_id} returns individual region details with products list. Region coordinates verified for mapping functionality."
+
+  - task: "Extended E-commerce API - Recommendations"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Recommendations working correctly. GET /api/products/{product_id}/recommendations returns frequently_bought_together and similar_products. POST /api/cart/recommendations provides recommendations based on cart items. Database-driven recommendations system operational."
+
+  - task: "Extended E-commerce API - Advanced Filters"
+    implemented: true
+    working: true
+    file: "backend/routes_extended.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Advanced filters working correctly. GET /api/products/filter/advanced supports all filter combinations: category, price_min/max, origin, labels, in_stock, rating_min. All sort options working: recent, price_low, price_high, rating, popular. Pagination with skip/limit verified. Combined filters tested successfully."
+
 frontend:
   - task: "Frontend Integration - Not tested by testing agent"
     implemented: true
@@ -134,8 +218,8 @@ frontend:
 
 metadata:
   created_by: "testing_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "1.1"
+  test_sequence: 2
   run_ui: false
 
 test_plan:
@@ -143,6 +227,13 @@ test_plan:
     - "P1 - Admin Customization API"
     - "P2 - Dynamic Styles"
     - "P3 - Media Library API"
+    - "Extended E-commerce API - Reviews endpoints"
+    - "Extended E-commerce API - Wishlist endpoints"
+    - "Extended E-commerce API - Stock Alerts"
+    - "Extended E-commerce API - Shipping Calculator"
+    - "Extended E-commerce API - Regions/Origins"
+    - "Extended E-commerce API - Recommendations"
+    - "Extended E-commerce API - Advanced Filters"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -150,3 +241,6 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "✅ ALL P1, P2, P3 FEATURES TESTED SUCCESSFULLY - Complete implementation verified. P1 Admin Customization API (GET public, GET admin, PUT admin) working correctly with proper authentication. P2 Dynamic Styles verified - customization changes persist and are reflected in public endpoint. P3 Media Library API (GET, POST upload, DELETE) working correctly with full CRUD operations. Download archives exist and are accessible. All 16 tests passed (16/16). Ready for production use."
+  
+  - agent: "testing"
+    message: "✅ EXTENDED E-COMMERCE API TESTING COMPLETE - ALL 7 MODULES TESTED SUCCESSFULLY. Reviews: All endpoints working with filters, pagination, and helpful voting. Wishlist: CRUD operations working with authentication. Stock Alerts: Creation and admin retrieval working. Shipping Calculator: Weight-based pricing with free shipping threshold working. Regions/Origins: 3 regions with coordinates verified. Recommendations: Frequently bought together and similar products working. Advanced Filters: All filter combinations, sorting, and pagination working. Total: 44 individual endpoint tests passed (44/44). Backend APIs ready for frontend integration."
