@@ -111,11 +111,11 @@ export default function TestimonialsSection() {
               </div>
 
               <p className="text-gray-700 mb-6 italic leading-relaxed">
-                "{testimonial.comment}"
+                "{testimonial.content?.[language] || testimonial.content?.fr || testimonial.comment || ''}"
               </p>
 
               <div className="border-t pt-4">
-                <p className="font-semibold text-gray-900">{testimonial.customer_name}</p>
+                <p className="font-semibold text-gray-900">{testimonial.user_name || testimonial.customer_name || 'Client'}</p>
                 <p className="text-sm text-gray-500">{formatDate(testimonial.approved_at || testimonial.created_at)}</p>
               </div>
             </div>

@@ -21,6 +21,10 @@ const InteractiveOriginMap = ({ productOrigin, onRegionClick }) => {
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Check if productOrigin has required map properties (coordinates)
+  const hasMapData = productOrigin && productOrigin.coordinates && 
+    productOrigin.coordinates.lat && productOrigin.coordinates.lng;
+
   useEffect(() => {
     fetchRegions();
   }, []);
@@ -52,6 +56,12 @@ const InteractiveOriginMap = ({ productOrigin, onRegionClick }) => {
   const defaultCenter = [28.0339, 1.6596];
   const defaultZoom = 5;
 
+  // If no map data for productOrigin, don't render the map
+  // This handles cases where origin is just a simple string dict {"fr": "...", "en": "..."}
+  if (!hasMapData && !regions.length && !loading) {
+    return null; // Don't show map section if there's no coordinates
+  }
+
   if (loading) {
     return <div className="text-center py-8">Chargement de la carte...</div>;
   }
@@ -60,11 +70,11 @@ const InteractiveOriginMap = ({ productOrigin, onRegionClick }) => {
     <div className="space-y-4">
       <div className="h-96 rounded-lg overflow-hidden border border-gray-200">
         <MapContainer
-          center={productOrigin?.coordinates ? 
+          center={hasMapData ? 
             [productOrigin.coordinates.lat, productOrigin.coordinates.lng] : 
             defaultCenter
           }
-          zoom={productOrigin ? 8 : defaultZoom}
+          zoom={hasMapData ? 8 : defaultZoom}
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
@@ -72,13 +82,13 @@ const InteractiveOriginMap = ({ productOrigin, onRegionClick }) => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          {productOrigin && (
+          {hasMapData && productOrigin.region_name && (
             <Marker 
               position={[productOrigin.coordinates.lat, productOrigin.coordinates.lng]}
             >
               <Popup>
                 <div className="p-2">
-                  <h3 className="font-bold mb-1">{productOrigin.region_name.fr}</h3>
+                  <h3 className="font-bold mb-1">{productOrigin.region_name?.fr || 'Origine'}</h3>
                   {productOrigin.producer_name && (
                     <p className="text-sm">Producteur: {productOrigin.producer_name}</p>
                   )}
@@ -87,36 +97,38 @@ const InteractiveOriginMap = ({ productOrigin, onRegionClick }) => {
             </Marker>
           )}
           
-          {!productOrigin && regions.map((region) => (
-            <Marker
-              key={region.id}
-              position={[region.coordinates.lat, region.coordinates.lng]}
-              eventHandlers={{
-                click: () => handleRegionClick(region.id)
-              }}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-bold mb-1">{region.name.fr}</h3>
-                  <p className="text-sm">{region.product_ids?.length || 0} produits</p>
-                  <button 
-                    onClick={() => handleRegionClick(region.id)}
-                    className="text-blue-600 text-sm mt-2 hover:underline"
-                  >
-                    Voir les produits
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
+          {!hasMapData && regions.map((region) => (
+            region.coordinates && region.coordinates.lat && region.coordinates.lng && (
+              <Marker
+                key={region.id}
+                position={[region.coordinates.lat, region.coordinates.lng]}
+                eventHandlers={{
+                  click: () => handleRegionClick(region.id)
+                }}
+              >
+                <Popup>
+                  <div className="p-2">
+                    <h3 className="font-bold mb-1">{region.name?.fr || 'Région'}</h3>
+                    <p className="text-sm">{region.product_ids?.length || 0} produits</p>
+                    <button 
+                      onClick={() => handleRegionClick(region.id)}
+                      className="text-blue-600 text-sm mt-2 hover:underline"
+                    >
+                      Voir les produits
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            )
           ))}
         </MapContainer>
       </div>
 
       {selectedRegion && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h3 className="text-xl font-bold mb-2">{selectedRegion.name.fr}</h3>
+          <h3 className="text-xl font-bold mb-2">{selectedRegion.name?.fr || 'Région'}</h3>
           {selectedRegion.description && (
-            <p className="text-gray-700 mb-3">{selectedRegion.description.fr}</p>
+            <p className="text-gray-700 mb-3">{selectedRegion.description?.fr || ''}</p>
           )}
           <div className="text-sm text-gray-600">
             {selectedRegion.products?.length || 0} produit(s) de cette région

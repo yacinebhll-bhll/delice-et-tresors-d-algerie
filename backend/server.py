@@ -604,7 +604,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.PyJWTError:
         raise credentials_exception
     
-    user = await db.users.find_one({"email": email})
+    user = await db.users.find_one({"email": email}, {"_id": 0})
     if user is None:
         raise credentials_exception
     return User(**user)
@@ -621,7 +621,7 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
 @api_router.post("/auth/register", response_model=User)
 async def register(user_data: UserCreate):
     # Check if user exists
-    existing_user = await db.users.find_one({"email": user_data.email})
+    existing_user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -669,7 +669,7 @@ class PasswordResetConfirm(BaseModel):
 @api_router.post("/auth/forgot-password")
 async def forgot_password(request: PasswordResetRequest, background_tasks: BackgroundTasks):
     """Request a password reset email"""
-    user = await db.users.find_one({"email": request.email})
+    user = await db.users.find_one({"email": request.email}, {"_id": 0})
     
     # Always return success to prevent email enumeration attacks
     if not user:
@@ -702,7 +702,7 @@ async def forgot_password(request: PasswordResetRequest, background_tasks: Backg
 async def reset_password(request: PasswordResetConfirm):
     """Reset password with token"""
     # Find the reset token
-    reset_record = await db.password_resets.find_one({"token": request.token})
+    reset_record = await db.password_resets.find_one({"token": request.token}, {"_id": 0})
     
     if not reset_record:
         raise HTTPException(
@@ -751,7 +751,7 @@ async def reset_password(request: PasswordResetConfirm):
 @api_router.get("/auth/verify-reset-token/{token}")
 async def verify_reset_token(token: str):
     """Verify if a reset token is valid"""
-    reset_record = await db.password_resets.find_one({"token": token})
+    reset_record = await db.password_resets.find_one({"token": token}, {"_id": 0})
     
     if not reset_record:
         raise HTTPException(
@@ -884,7 +884,7 @@ async def update_user_profile(
         )
         
         # Fetch updated user
-        updated_user = await db.users.find_one({"id": current_user.id})
+        updated_user = await db.users.find_one({"id": current_user.id}, {"_id": 0})
         return User(**updated_user)
     
     return current_user
@@ -905,7 +905,7 @@ async def change_password(
         )
     
     # Verify current password
-    user_with_password = await db.users.find_one({"id": current_user.id})
+    user_with_password = await db.users.find_one({"id": current_user.id}, {"_id": 0})
     if not verify_password(current_password, user_with_password.get("hashed_password")):
         raise HTTPException(
             status_code=400,
@@ -981,11 +981,11 @@ async def delete_category(category_id: str, admin: User = Depends(get_admin_user
     return {"message": "Category deleted successfully"}
 
 # --- Product Routes ---
-@api_router.get("/products", response_model=List[Product])
+@api_router.get("/products")
 async def get_products(category: Optional[str] = None):
     query = {"category": category} if category else {}
     products = await db.products.find(query, {"_id": 0}).to_list(1000)
-    return [Product(**product) for product in products]
+    return products
 
 @api_router.post("/products", response_model=Product)
 async def create_product(product_data: ProductCreate, current_user: User = Depends(get_current_user)):
@@ -995,16 +995,16 @@ async def create_product(product_data: ProductCreate, current_user: User = Depen
     await db.products.insert_one(product.dict())
     return product
 
-@api_router.get("/products/{product_id}", response_model=Product)
+@api_router.get("/products/{product_id}")
 async def get_product(product_id: str):
     product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return Product(**product)
+    return product
 
-@api_router.put("/products/{product_id}", response_model=Product)
+@api_router.put("/products/{product_id}")
 async def update_product(product_id: str, product_data: ProductUpdate, admin_user: User = Depends(get_admin_user)):
-    product = await db.products.find_one({"id": product_id})
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
@@ -1012,12 +1012,12 @@ async def update_product(product_id: str, product_data: ProductUpdate, admin_use
     if update_data:
         await db.products.update_one({"id": product_id}, {"$set": update_data})
     
-    updated_product = await db.products.find_one({"id": product_id})
-    return Product(**updated_product)
+    updated_product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    return updated_product
 
 @api_router.delete("/products/{product_id}")
 async def delete_product(product_id: str, admin_user: User = Depends(get_admin_user)):
-    product = await db.products.find_one({"id": product_id})
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
@@ -1041,7 +1041,7 @@ async def create_historical_content(content_data: HistoricalContentCreate, admin
 
 @api_router.put("/historical-content/{content_id}", response_model=HistoricalContent)
 async def update_historical_content(content_id: str, content_data: HistoricalContentUpdate, admin_user: User = Depends(get_admin_user)):
-    content = await db.historical_content.find_one({"id": content_id})
+    content = await db.historical_content.find_one({"id": content_id}, {"_id": 0})
     if not content:
         raise HTTPException(status_code=404, detail="Historical content not found")
     
@@ -1049,12 +1049,12 @@ async def update_historical_content(content_id: str, content_data: HistoricalCon
     if update_data:
         await db.historical_content.update_one({"id": content_id}, {"$set": update_data})
     
-    updated_content = await db.historical_content.find_one({"id": content_id})
+    updated_content = await db.historical_content.find_one({"id": content_id}, {"_id": 0})
     return HistoricalContent(**updated_content)
 
 @api_router.delete("/historical-content/{content_id}")
 async def delete_historical_content(content_id: str, admin_user: User = Depends(get_admin_user)):
-    content = await db.historical_content.find_one({"id": content_id})
+    content = await db.historical_content.find_one({"id": content_id}, {"_id": 0})
     if not content:
         raise HTTPException(status_code=404, detail="Historical content not found")
     
@@ -1096,7 +1096,7 @@ async def get_all_users(admin_user: User = Depends(get_admin_user)):
 
 @api_router.put("/admin/users/{user_id}", response_model=User)
 async def update_user_admin(user_id: str, user_data: UserUpdate, admin_user: User = Depends(get_admin_user)):
-    user = await db.users.find_one({"id": user_id})
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -1104,12 +1104,12 @@ async def update_user_admin(user_id: str, user_data: UserUpdate, admin_user: Use
     if update_data:
         await db.users.update_one({"id": user_id}, {"$set": update_data})
     
-    updated_user = await db.users.find_one({"id": user_id})
+    updated_user = await db.users.find_one({"id": user_id}, {"_id": 0})
     return User(**updated_user)
 
 @api_router.delete("/admin/users/{user_id}")
 async def delete_user_admin(user_id: str, admin_user: User = Depends(get_admin_user)):
-    user = await db.users.find_one({"id": user_id})
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -1124,7 +1124,7 @@ async def delete_user_admin(user_id: str, admin_user: User = Depends(get_admin_u
 @api_router.get("/admin/settings")
 async def get_settings(admin_user: User = Depends(get_admin_user)):
     """Get site settings (admin only)"""
-    settings = await db.settings.find_one({"id": "site_settings"})
+    settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
     
     if not settings:
         # Return default settings if none exist
@@ -1144,7 +1144,7 @@ async def update_settings(
     """Update site settings (admin only)"""
     try:
         # Get existing settings or create new
-        existing_settings = await db.settings.find_one({"id": "site_settings"})
+        existing_settings = await db.settings.find_one({"id": "site_settings"}, {"_id": 0})
         
         if existing_settings:
             # Update existing settings
@@ -1339,7 +1339,7 @@ async def delete_media(
     """Delete a file from the media library"""
     try:
         # Find media record
-        media = await db.media.find_one({"id": media_id})
+        media = await db.media.find_one({"id": media_id}, {"_id": 0})
         
         if not media:
             raise HTTPException(status_code=404, detail="Media not found")
@@ -1680,30 +1680,30 @@ async def create_testimonial(testimonial_data: TestimonialCreate):
     await db.testimonials.insert_one(testimonial.model_dump())
     return testimonial
 
-@api_router.get("/testimonials", response_model=List[Testimonial])
+@api_router.get("/testimonials")
 async def get_approved_testimonials(limit: int = 10):
     """Get approved testimonials (public)"""
     testimonials = await db.testimonials.find(
         {"is_approved": True},
         {"_id": 0}
-    ).sort("approved_at", -1).limit(limit).to_list(limit)
-    return [Testimonial(**t) for t in testimonials]
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    return testimonials
 
-@api_router.get("/admin/testimonials", response_model=List[Testimonial])
+@api_router.get("/admin/testimonials")
 async def get_all_testimonials(admin: User = Depends(get_admin_user)):
     """Get all testimonials including pending (admin only)"""
     testimonials = await db.testimonials.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return [Testimonial(**t) for t in testimonials]
+    return testimonials
 
-@api_router.get("/admin/testimonials/{testimonial_id}", response_model=Testimonial)
+@api_router.get("/admin/testimonials/{testimonial_id}")
 async def get_testimonial(testimonial_id: str, admin: User = Depends(get_admin_user)):
     """Get a specific testimonial (admin only)"""
     testimonial = await db.testimonials.find_one({"id": testimonial_id}, {"_id": 0})
     if not testimonial:
         raise HTTPException(status_code=404, detail="Testimonial not found")
-    return Testimonial(**testimonial)
+    return testimonial
 
-@api_router.put("/admin/testimonials/{testimonial_id}", response_model=Testimonial)
+@api_router.put("/admin/testimonials/{testimonial_id}")
 async def update_testimonial(
     testimonial_id: str,
     update_data: TestimonialUpdate,
@@ -1728,7 +1728,7 @@ async def update_testimonial(
         )
         testimonial.update(update_dict)
     
-    return Testimonial(**testimonial)
+    return testimonial
 
 @api_router.delete("/admin/testimonials/{testimonial_id}")
 async def delete_testimonial(testimonial_id: str, admin: User = Depends(get_admin_user)):
@@ -2317,13 +2317,13 @@ async def validate_promo_code(validation: PromoCodeValidation):
     }
 
 # --- Stock Management Routes ---
-@api_router.get("/admin/inventory", response_model=List[Product])
+@api_router.get("/admin/inventory")
 async def get_inventory_overview(admin: User = Depends(get_admin_user)):
     """Get all products with inventory information (admin only)"""
     products = await db.products.find({}, {"_id": 0}).sort("name.fr", 1).to_list(1000)
-    return [Product(**product) for product in products]
+    return products
 
-@api_router.get("/admin/inventory/low-stock", response_model=List[Product])
+@api_router.get("/admin/inventory/low-stock")
 async def get_low_stock_products(admin: User = Depends(get_admin_user)):
     """Get products with low stock (admin only)"""
     products = await db.products.find(
@@ -2333,7 +2333,7 @@ async def get_low_stock_products(admin: User = Depends(get_admin_user)):
         },
         {"_id": 0}
     ).to_list(1000)
-    return [Product(**product) for product in products]
+    return products
 
 @api_router.post("/admin/inventory/{product_id}/adjust")
 async def adjust_stock(

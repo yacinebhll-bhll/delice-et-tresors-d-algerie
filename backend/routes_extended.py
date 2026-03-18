@@ -29,12 +29,10 @@ async def get_current_user_from_token(authorization: str = Header(None)):
         if not user_email:
             raise HTTPException(status_code=401, detail="Invalid token")
         
-        user = await db.users.find_one({"email": user_email})
+        user = await db.users.find_one({"email": user_email}, {"_id": 0})
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         
-        if '_id' in user:
-            del user['_id']
         return user
     except:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -62,9 +60,7 @@ async def get_product_reviews(
     sort_opts = {"recent": [("created_at", -1)], "helpful": [("helpful_count", -1)], 
                  "rating_high": [("rating", -1)], "rating_low": [("rating", 1)]}
     
-    reviews = await db.reviews.find(query).sort(sort_opts.get(sort, [("created_at", -1)])).skip(skip).limit(limit).to_list(length=limit)
-    for r in reviews:
-        if '_id' in r: del r['_id']
+    reviews = await db.reviews.find(query, {"_id": 0}).sort(sort_opts.get(sort, [("created_at", -1)])).skip(skip).limit(limit).to_list(length=limit)
     
     total = await db.reviews.count_documents(query)
     return {"reviews": reviews, "total": total, "page": skip // limit + 1, "pages": (total + limit - 1) // limit}
@@ -73,15 +69,15 @@ async def get_product_reviews(
 async def create_review(review_data: ReviewCreate, authorization: str = Header(None)):
     current_user = await get_current_user_from_token(authorization)
     
-    product = await db.products.find_one({"id": review_data.product_id})
+    product = await db.products.find_one({"id": review_data.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    existing = await db.reviews.find_one({"product_id": review_data.product_id, "user_id": current_user['id']})
+    existing = await db.reviews.find_one({"product_id": review_data.product_id, "user_id": current_user['id']}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="You have already reviewed this product")
     
-    order = await db.orders.find_one({"user_id": current_user['id'], "items.product_id": review_data.product_id, "status": "delivered"})
+    order = await db.orders.find_one({"user_id": current_user['id'], "items.product_id": review_data.product_id, "status": "delivered"}, {"_id": 0})
     
     review_dict = review_data.dict()
     review_dict.update({
@@ -97,14 +93,14 @@ async def create_review(review_data: ReviewCreate, authorization: str = Header(N
     await db.reviews.insert_one(review_dict)
     await update_product_reviews_summary(review_data.product_id)
     
-    if '_id' in review_dict: del review_dict['_id']
+    review_dict.pop('_id', None)
     return review_dict
 
 @router.post("/reviews/{review_id}/helpful")
 async def mark_review_helpful(review_id: str, authorization: str = Header(None)):
     current_user = await get_current_user_from_token(authorization)
     
-    review = await db.reviews.find_one({"id": review_id})
+    review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
@@ -119,7 +115,7 @@ async def mark_review_helpful(review_id: str, authorization: str = Header(None))
         return {"helpful": True, "count": review["helpful_count"] + 1}
 
 async def update_product_reviews_summary(product_id: str):
-    reviews = await db.reviews.find({"product_id": product_id}).to_list(length=None)
+    reviews = await db.reviews.find({"product_id": product_id}, {"_id": 0}).to_list(length=None)
     if not reviews:
         return
     
@@ -136,15 +132,14 @@ async def update_product_reviews_summary(product_id: str):
 @router.get("/wishlist")
 async def get_wishlist(authorization: str = Header(None)):
     current_user = await get_current_user_from_token(authorization)
-    wishlist = await db.wishlists.find_one({"user_id": current_user['id']})
+    wishlist = await db.wishlists.find_one({"user_id": current_user['id']}, {"_id": 0})
     if not wishlist:
         return {"items": [], "total": 0}
     
     items_with_details = []
     for item in wishlist.get("items", []):
-        product = await db.products.find_one({"id": item["product_id"]})
+        product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
         if product:
-            if '_id' in product: del product['_id']
             items_with_details.append({**item, "product": product})
     
     return {"items": items_with_details, "total": len(items_with_details)}
@@ -153,11 +148,11 @@ async def get_wishlist(authorization: str = Header(None)):
 async def add_to_wishlist(item: WishlistAdd, authorization: str = Header(None)):
     current_user = await get_current_user_from_token(authorization)
     
-    product = await db.products.find_one({"id": item.product_id})
+    product = await db.products.find_one({"id": item.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    wishlist = await db.wishlists.find_one({"user_id": current_user['id']})
+    wishlist = await db.wishlists.find_one({"user_id": current_user['id']}, {"_id": 0})
     if not wishlist:
         wishlist_dict = {"id": str(__import__('uuid').uuid4()), "user_id": current_user['id'], "items": [], "created_at": datetime.now(timezone.utc), "updated_at": datetime.now(timezone.utc)}
         await db.wishlists.insert_one(wishlist_dict)
@@ -187,19 +182,18 @@ async def remove_from_wishlist(product_id: str, variant_id: Optional[str] = None
 
 @router.post("/stock-alerts")
 async def create_stock_alert(alert_data: StockAlertCreate):
-    product = await db.products.find_one({"id": alert_data.product_id})
+    product = await db.products.find_one({"id": alert_data.product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    existing = await db.stock_alerts.find_one({"email": alert_data.email, "product_id": alert_data.product_id, "variant_id": alert_data.variant_id, "notified": False})
+    existing = await db.stock_alerts.find_one({"email": alert_data.email, "product_id": alert_data.product_id, "variant_id": alert_data.variant_id, "notified": False}, {"_id": 0})
     if existing:
-        if '_id' in existing: del existing['_id']
         return {"message": "Alert already exists", "alert": existing}
     
     alert_dict = alert_data.dict()
     alert_dict.update({"id": str(__import__('uuid').uuid4()), "notified": False, "created_at": datetime.now(timezone.utc)})
     await db.stock_alerts.insert_one(alert_dict)
-    if '_id' in alert_dict: del alert_dict['_id']
+    alert_dict.pop('_id', None)
     
     return {"message": "Stock alert created", "alert": alert_dict}
 
@@ -209,23 +203,21 @@ async def get_pending_stock_alerts(authorization: str = Header(None)):
     if current_user.get('role') != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    alerts = await db.stock_alerts.find({"notified": False}).to_list(length=None)
-    for alert in alerts:
-        if '_id' in alert: del alert['_id']
+    alerts = await db.stock_alerts.find({"notified": False}, {"_id": 0}).to_list(length=None)
     return {"alerts": alerts, "total": len(alerts)}
 
 # ============ SHIPPING ============
 
 @router.post("/shipping/calculate", response_model=ShippingResult)
 async def calculate_shipping(calculation: ShippingCalculation):
-    rule = await db.shipping_rules.find_one({"destination_country": calculation.destination_country})
+    rule = await db.shipping_rules.find_one({"destination_country": calculation.destination_country}, {"_id": 0})
     if not rule:
         rule = {"weight_brackets": [{"max_kg": 1, "standard_price": 6.90, "express_price": 12.90}, {"max_kg": 5, "standard_price": 9.90, "express_price": 17.90}, {"max_kg": 999, "standard_price": 14.90, "express_price": 24.90}], "free_shipping_threshold": 50.0}
     
     total_weight = 0
     total_value = 0
     for item in calculation.items:
-        product = await db.products.find_one({"id": item["product_id"]})
+        product = await db.products.find_one({"id": item["product_id"]}, {"_id": 0})
         if product:
             variant = next((v for v in product.get("variants", []) if v["id"] == item.get("variant_id")), product.get("variants", [{}])[0] if product.get("variants") else {})
             total_weight += variant.get("weight_kg", 0.5) * item.get("quantity", 1)
@@ -249,21 +241,16 @@ async def calculate_shipping(calculation: ShippingCalculation):
 
 @router.get("/regions")
 async def get_regions():
-    regions = await db.regions.find().to_list(length=None)
-    for r in regions:
-        if '_id' in r: del r['_id']
+    regions = await db.regions.find({}, {"_id": 0}).to_list(length=None)
     return regions
 
 @router.get("/regions/{region_id}")
 async def get_region(region_id: str):
-    region = await db.regions.find_one({"id": region_id})
+    region = await db.regions.find_one({"id": region_id}, {"_id": 0})
     if not region:
         raise HTTPException(status_code=404, detail="Region not found")
-    if '_id' in region: del region['_id']
     
-    products = await db.products.find({"origin.region_id": region_id}).to_list(length=None)
-    for p in products:
-        if '_id' in p: del p['_id']
+    products = await db.products.find({"origin.region_id": region_id}, {"_id": 0}).to_list(length=None)
     region["products"] = products
     return region
 
@@ -271,35 +258,31 @@ async def get_region(region_id: str):
 
 @router.get("/products/{product_id}/recommendations")
 async def get_product_recommendations(product_id: str):
-    product = await db.products.find_one({"id": product_id})
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    cached = await db.recommendations.find_one({"product_id": product_id})
+    cached = await db.recommendations.find_one({"product_id": product_id}, {"_id": 0})
     if cached:
-        frequently_bought = await db.products.find({"id": {"$in": cached.get("frequently_bought_together", [])}}).to_list(length=4)
-        similar = await db.products.find({"id": {"$in": cached.get("similar_products", [])}}).to_list(length=4)
+        frequently_bought = await db.products.find({"id": {"$in": cached.get("frequently_bought_together", [])}}, {"_id": 0}).to_list(length=4)
+        similar = await db.products.find({"id": {"$in": cached.get("similar_products", [])}}, {"_id": 0}).to_list(length=4)
     else:
-        similar = await db.products.find({"category": product.get("category"), "id": {"$ne": product_id}}).limit(4).to_list(length=4)
+        similar = await db.products.find({"category": product.get("category"), "id": {"$ne": product_id}}, {"_id": 0}).limit(4).to_list(length=4)
         frequently_bought = []
     
-    for p in frequently_bought + similar:
-        if '_id' in p: del p['_id']
     return {"frequently_bought_together": frequently_bought, "similar_products": similar}
 
 @router.post("/cart/recommendations")
 async def get_cart_recommendations(items: List[Dict]):
     product_ids = [item["product_id"] for item in items]
-    recommendations = await db.recommendations.find({"product_id": {"$in": product_ids}}).to_list(length=None)
+    recommendations = await db.recommendations.find({"product_id": {"$in": product_ids}}, {"_id": 0}).to_list(length=None)
     
     suggested_ids = set()
     for rec in recommendations:
         suggested_ids.update(rec.get("frequently_bought_together", []))
     suggested_ids -= set(product_ids)
     
-    suggestions = await db.products.find({"id": {"$in": list(suggested_ids)}}).limit(6).to_list(length=6)
-    for s in suggestions:
-        if '_id' in s: del s['_id']
+    suggestions = await db.products.find({"id": {"$in": list(suggested_ids)}}, {"_id": 0}).limit(6).to_list(length=6)
     return {"recommendations": suggestions}
 
 # ============ FILTERS ============
@@ -323,10 +306,7 @@ async def filter_products_advanced(
         query["variants.price"] = price_query
     
     sort_opts = {"recent": [("created_at", -1)], "price_low": [("variants.0.price", 1)], "price_high": [("variants.0.price", -1)], "rating": [("reviews_summary.average_rating", -1)], "popular": [("reviews_summary.total_reviews", -1)]}
-    products = await db.products.find(query).sort(sort_opts.get(sort, [("created_at", -1)])).skip(skip).limit(limit).to_list(length=limit)
-    
-    for p in products:
-        if '_id' in p: del p['_id']
+    products = await db.products.find(query, {"_id": 0}).sort(sort_opts.get(sort, [("created_at", -1)])).skip(skip).limit(limit).to_list(length=limit)
     
     total = await db.products.count_documents(query)
     return {"products": products, "total": total, "page": skip // limit + 1, "pages": (total + limit - 1) // limit}
