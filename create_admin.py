@@ -6,7 +6,7 @@ import requests
 import json
 
 # Configuration
-API_BASE = "https://ecommerce-admin-29.preview.emergentagent.com/api"
+API_BASE = "https://api-fix-preview-2.preview.emergentagent.com/api"
 
 # Données de l'admin par défaut
 ADMIN_EMAIL = "admin@soumam.com"
@@ -31,7 +31,7 @@ def create_admin():
             print(f"✅ Utilisateur admin créé avec succès!")
             print(f"📧 Email: {ADMIN_EMAIL}")
             print(f"🔑 Mot de passe: {ADMIN_PASSWORD}")
-            print(f"🌐 Accès admin: https://ecommerce-admin-29.preview.emergentagent.com/admin")
+            print(f"🌐 Accès admin: https://api-fix-preview-2.preview.emergentagent.com/admin")
             return True
         else:
             print(f"⚠️  L'utilisateur admin existe peut-être déjà: {response.text}")

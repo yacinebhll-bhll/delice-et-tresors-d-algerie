@@ -17,7 +17,7 @@
 
 ### Domaines
 - **Production** : https://mazigho.com
-- **Preview** : https://ecommerce-admin-29.preview.emergentagent.com
+- **Preview** : https://api-fix-preview-2.preview.emergentagent.com
 
 ---
 

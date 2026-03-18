@@ -11,7 +11,7 @@ import time
 from datetime import datetime, timezone
 
 class ForgotPasswordTester:
-    def __init__(self, base_url="https://ecommerce-admin-29.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://api-fix-preview-2.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

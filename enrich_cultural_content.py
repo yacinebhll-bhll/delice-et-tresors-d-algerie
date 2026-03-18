@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 
 # Configuration
-API_BASE = "https://ecommerce-admin-29.preview.emergentagent.com/api"
+API_BASE = "https://api-fix-preview-2.preview.emergentagent.com/api"
 
 # Données admin
 ADMIN_EMAIL = "admin@soumam.com"
@@ -180,7 +180,7 @@ def main():
             print(f"\n🎉 {success_count} nouveaux contenus culturels ont été ajoutés!")
             print("📍 Régions couvertes: Algérie, Kabylie, Vallée de Soumam")
             print("🌍 Langues: Français, Arabe, Anglais")
-            print("Vous pouvez les voir sur: https://ecommerce-admin-29.preview.emergentagent.com/history")
+            print("Vous pouvez les voir sur: https://api-fix-preview-2.preview.emergentagent.com/history")
         
     except Exception as e:
         print(f"❌ Erreur générale: {str(e)}")
