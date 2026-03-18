@@ -57,19 +57,14 @@ const WishlistPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center">Chargement...</div>
-        </div>
-        <Footer />
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="bg-gray-50">
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <button
@@ -171,8 +166,6 @@ const WishlistPage = () => {
           </div>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };

@@ -12,8 +12,6 @@ import InteractiveOriginMap from './InteractiveOriginMap';
 import ProductReviews from './ProductReviews';
 import ProductRecommendations from './ProductRecommendations';
 import StockAlert from './StockAlert';
-import Header from './Header';
-import Footer from './Footer';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = `${BACKEND_URL}/api`;
@@ -127,24 +125,16 @@ const ProductDetailPageExtended = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center">Chargement...</div>
-        </div>
-        <Footer />
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center">Chargement...</div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center">Produit non trouvé</div>
-        </div>
-        <Footer />
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center">Produit non trouvé</div>
       </div>
     );
   }
@@ -153,8 +143,7 @@ const ProductDetailPageExtended = () => {
   const isOutOfStock = selectedVariant?.stock_quantity === 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="bg-gray-50">
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -324,8 +313,6 @@ const ProductDetailPageExtended = () => {
           <ProductRecommendations productId={product.id} />
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
