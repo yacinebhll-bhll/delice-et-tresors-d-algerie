@@ -18,7 +18,7 @@ import Footer from './Footer';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = `${BACKEND_URL}/api`;
 
-const ProductDetailPage = () => {
+const ProductDetailPageExtended = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
