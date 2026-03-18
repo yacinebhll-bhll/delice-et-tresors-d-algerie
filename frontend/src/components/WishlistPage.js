@@ -35,7 +35,7 @@ const WishlistPage = () => {
     
     toast({
       title: 'Ajouté au panier',
-      description: `${product.name[language]} a été ajouté au panier`
+      description: `${product.name?.[language] || product.name?.fr || 'Produit'} a été ajouté au panier`
     });
   };
 
@@ -113,7 +113,7 @@ const WishlistPage = () => {
                   <div className="relative">
                     <img
                       src={product.image_urls?.[0] || '/placeholder.jpg'}
-                      alt={product.name[language]}
+                      alt={product.name?.[language] || product.name?.fr || product.name || 'Product'}
                       className="w-full h-48 object-cover cursor-pointer"
                       onClick={() => navigate(`/product/${product.id}`)}
                     />
@@ -130,7 +130,7 @@ const WishlistPage = () => {
                       className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:text-green-700"
                       onClick={() => navigate(`/product/${product.id}`)}
                     >
-                      {product.name[language]}
+                      {product.name?.[language] || product.name?.fr || product.name || 'Produit'}
                     </h3>
                     
                     {variant && (

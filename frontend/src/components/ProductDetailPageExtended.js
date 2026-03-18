@@ -81,7 +81,7 @@ const ProductDetailPage = () => {
 
     toast({
       title: 'Ajouté au panier',
-      description: `${product.name[language]} a été ajouté au panier`
+      description: `${product.name?.[language] || product.name?.fr || 'Produit'} a été ajouté au panier`
     });
   };
 
@@ -172,7 +172,7 @@ const ProductDetailPage = () => {
             <div className="bg-white rounded-lg overflow-hidden mb-4">
               <img
                 src={product.image_urls?.[selectedImage] || '/placeholder.jpg'}
-                alt={product.name[language]}
+                alt={product.name?.[language] || product.name?.fr || product.name || 'Product'}
                 className="w-full h-96 object-cover"
               />
             </div>
@@ -206,7 +206,7 @@ const ProductDetailPage = () => {
           {/* Right: Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold mb-3">{product.name[language]}</h1>
+              <h1 className="text-3xl font-bold mb-3">{product.name?.[language] || product.name?.fr || product.name || 'Produit'}</h1>
               
               {product.reviews_summary && product.reviews_summary.total_reviews > 0 && (
                 <div className="flex items-center gap-3 mb-4">
@@ -242,7 +242,7 @@ const ProductDetailPage = () => {
             {/* Description */}
             <div>
               <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-700">{product.description[language]}</p>
+              <p className="text-gray-700">{product.description?.[language] || product.description?.fr || product.description || ''}</p>
             </div>
 
             {/* Origin */}
@@ -250,7 +250,7 @@ const ProductDetailPage = () => {
               <div>
                 <h3 className="font-semibold mb-2">Origine</h3>
                 <p className="text-gray-700 mb-3">
-                  {product.origin.region_name[language]}
+                  {product.origin.region_name?.[language] || product.origin.region_name?.fr || product.origin.region_name || ''}
                 </p>
               </div>
             )}
@@ -330,4 +330,4 @@ const ProductDetailPage = () => {
   );
 };
 
-export default ProductDetailPage;
+export default ProductDetailPageExtended;
