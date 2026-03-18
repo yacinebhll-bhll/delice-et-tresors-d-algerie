@@ -46,6 +46,11 @@ async def get_product_reviews(
         sort_options.get(sort, [("created_at", -1)])
     ).skip(skip).limit(limit).to_list(length=limit)
     
+    # Remove _id from all reviews
+    for review in reviews:
+        if '_id' in review:
+            del review['_id']
+    
     total = await db.reviews.count_documents(query)
     
     return {
@@ -353,6 +358,10 @@ async def calculate_shipping(calculation: ShippingCalculation):
 @router.get("/regions")
 async def get_regions():
     regions = await db.regions.find().to_list(length=None)
+    # Remove MongoDB _id field
+    for region in regions:
+        if '_id' in region:
+            del region['_id']
     return regions
 
 @router.get("/regions/{region_id}")
@@ -361,10 +370,18 @@ async def get_region(region_id: str):
     if not region:
         raise HTTPException(status_code=404, detail="Region not found")
     
+    # Remove MongoDB _id
+    if '_id' in region:
+        del region['_id']
+    
     # Get products from this region
     products = await db.products.find(
         {"origin.region_id": region_id}
     ).to_list(length=None)
+    
+    for product in products:
+        if '_id' in product:
+            del product['_id']
     
     region["products"] = products
     return region
@@ -479,6 +496,11 @@ async def filter_products_advanced(
     products = await db.products.find(query).sort(
         sort_options.get(sort, [("created_at", -1)])
     ).skip(skip).limit(limit).to_list(length=limit)
+    
+    # Remove _id from all products
+    for product in products:
+        if '_id' in product:
+            del product['_id']
     
     total = await db.products.count_documents(query)
     

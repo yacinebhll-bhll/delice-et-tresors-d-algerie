@@ -4,6 +4,8 @@ import axios from 'axios';
 import './App.css';
 import { CartProvider } from './contexts/CartContext';
 import { CustomizationProvider, useCustomization } from './contexts/CustomizationContext';
+import { WishlistProvider } from './contexts/WishlistContext';
+import { FiltersProvider } from './contexts/FiltersContext';
 import ScrollToTop from './components/ScrollToTop';
 
 // Configure axios defaults for CORS
@@ -14,6 +16,9 @@ import Header from './components/Header';
 import HomePage from './components/HomePageNew';
 // RecipesPage removed - focusing on dates and olive oil
 import ShopPage from './components/ShopPage';
+import ShopPageExtended from './components/ShopPageExtended';
+import ProductDetailPageExtended from './components/ProductDetailPageExtended';
+import WishlistPage from './components/WishlistPage';
 import HistoryPage from './components/HistoryPage';
 import ContactPage from './components/ContactPage';
 import AuthPage from './components/AuthPage';
@@ -201,12 +206,14 @@ function App() {
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       <AuthContext.Provider value={{ user, login, register, logout }}>
         <CustomizationProvider>
-          <CartProvider>
-            <div className="App">
-              <Toaster />
-              <BrowserRouter>
-                <ScrollToTop />
-                <Cart />
+          <WishlistProvider>
+            <FiltersProvider>
+              <CartProvider>
+                <div className="App">
+                  <Toaster />
+                  <BrowserRouter>
+                    <ScrollToTop />
+                    <Cart />
             <Routes>
               {/* Admin Routes */}
               <Route path="/admin" element={
@@ -440,7 +447,9 @@ function App() {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       {/* Recipes removed - Délices et Trésors d'Algérie focuses on dates and olive oil */}
-                      <Route path="/shop" element={<ShopPage />} />
+                      <Route path="/shop" element={<ShopPageExtended />} />
+                      <Route path="/product/:id" element={<ProductDetailPageExtended />} />
+                      <Route path="/wishlist" element={<WishlistPage />} />
                       <Route path="/history" element={<HistoryPage />} />
                       <Route path="/contact" element={<ContactPage />} />
                       <Route path="/testimonials" element={<TestimonialsPage />} />
@@ -470,7 +479,9 @@ function App() {
             </Routes>
           </BrowserRouter>
         </div>
-          </CartProvider>
+              </CartProvider>
+            </FiltersProvider>
+          </WishlistProvider>
         </CustomizationProvider>
       </AuthContext.Provider>
     </LanguageContext.Provider>
