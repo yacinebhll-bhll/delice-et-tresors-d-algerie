@@ -19,6 +19,14 @@ import shutil
 import aiofiles
 from email_service import email_service
 
+# Import extended routes
+try:
+    from routes_extended import router as extended_router
+    EXTENDED_ROUTES_AVAILABLE = True
+except ImportError:
+    EXTENDED_ROUTES_AVAILABLE = False
+    print("Warning: Extended routes not available")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
@@ -2561,6 +2569,11 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Include extended routes if available
+if EXTENDED_ROUTES_AVAILABLE:
+    app.include_router(extended_router)
+    logger.info("Extended e-commerce routes loaded successfully")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
