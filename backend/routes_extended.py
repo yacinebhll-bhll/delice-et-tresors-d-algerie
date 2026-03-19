@@ -291,9 +291,16 @@ async def get_cart_recommendations(items: List[Dict]):
 async def filter_products_advanced(
     category: Optional[str] = None, price_min: Optional[float] = None, price_max: Optional[float] = None,
     origin: Optional[str] = None, labels: Optional[str] = None, in_stock: Optional[bool] = None,
-    rating_min: Optional[float] = None, sort: str = "recent", skip: int = 0, limit: int = 20
+    rating_min: Optional[float] = None, search: Optional[str] = None, sort: str = "recent", skip: int = 0, limit: int = 20
 ):
     query = {}
+    if search:
+        query["$or"] = [
+            {"name.fr": {"$regex": search, "$options": "i"}},
+            {"name.en": {"$regex": search, "$options": "i"}},
+            {"name.ar": {"$regex": search, "$options": "i"}},
+            {"description.fr": {"$regex": search, "$options": "i"}},
+        ]
     if category: query["category"] = category
     if origin: query["origin.region_id"] = origin
     if labels: query["labels"] = {"$in": labels.split(",")}

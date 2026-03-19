@@ -65,6 +65,12 @@ Application e-commerce full-stack pour vendre des produits algériens (dattes, h
 5. **InteractiveOriginMap Crash**: Added null checks for productOrigin.coordinates
 6. **Double Header**: Removed duplicate Header/Footer from ProductDetailPageExtended and WishlistPage (App.js provides them globally)
 
+## UI Enhancement (March 19, 2026)
+- Added visual category selector with professional Lucide icons on the shop page
+- Added search bar with real-time search functionality
+- Backend search endpoint updated to support text search across product names and descriptions
+- Category selector syncs with sidebar filters
+
 ## Credentials
 - Admin: yacbhll@gmail.com / Mazi@go
 
