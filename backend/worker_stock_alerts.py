@@ -86,7 +86,10 @@ async def send_stock_alerts():
         client.close()
 
 async def main():
-    await send_stock_alerts()
+    while True:
+        await send_stock_alerts()
+        print('Sleeping 1 hour...')
+        await asyncio.sleep(3600)
 
 if __name__ == "__main__":
     asyncio.run(main())

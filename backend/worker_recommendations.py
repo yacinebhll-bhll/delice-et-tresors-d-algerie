@@ -82,7 +82,10 @@ async def generate_recommendations():
         client.close()
 
 async def main():
-    await generate_recommendations()
+    while True:
+        await generate_recommendations()
+        print('Sleeping 24 hours...')
+        await asyncio.sleep(86400)
 
 if __name__ == "__main__":
     asyncio.run(main())

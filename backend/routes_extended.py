@@ -1,11 +1,16 @@
-from fastapi import APIRouter, HTTPException, status, Header
+from fastapi import APIRouter, HTTPException, status, Header, UploadFile, File
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr
+from pathlib import Path
 import jwt
 import os
+import uuid as uuid_mod
+import aiofiles
 
 router = APIRouter(prefix="/api")
+
+UPLOAD_DIR = Path(__file__).parent / "uploads"
 
 # Will be injected
 db = None
@@ -126,6 +131,37 @@ async def update_product_reviews_summary(product_id: str):
         distribution[str(review["rating"])] += 1
     
     await db.products.update_one({"id": product_id}, {"$set": {"reviews_summary": {"average_rating": average, "total_reviews": total, "rating_distribution": distribution}}})
+
+
+# ============ REVIEW IMAGE UPLOAD ============
+
+@router.post("/reviews/upload-image")
+async def upload_review_image(
+    file: UploadFile = File(...),
+    authorization: str = Header(None)
+):
+    """Upload an image for a review (authenticated users)"""
+    await get_current_user_from_token(authorization)
+    
+    allowed_types = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG and WebP images are allowed")
+    
+    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
+    unique_filename = f"{uuid_mod.uuid4()}.{ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    file_size = 0
+    async with aiofiles.open(file_path, 'wb') as f:
+        while chunk := await file.read(1024 * 64):
+            file_size += len(chunk)
+            if file_size > 5 * 1024 * 1024:
+                if file_path.exists():
+                    file_path.unlink()
+                raise HTTPException(status_code=400, detail="Image size exceeds 5MB limit")
+            await f.write(chunk)
+    
+    return {"url": f"/api/uploads/{unique_filename}", "filename": unique_filename}
 
 # ============ WISHLIST ============
 

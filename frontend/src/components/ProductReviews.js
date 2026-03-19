@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Star, ThumbsUp, Camera, Check, Filter } from 'lucide-react';
+import { Star, ThumbsUp, Camera, Check, X, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '../App';
 import { useToast } from '../hooks/use-toast';
 
@@ -24,6 +24,8 @@ const ProductReviews = ({ productId }) => {
     comment: '',
     photos: []
   });
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -49,6 +51,37 @@ const ProductReviews = ({ productId }) => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    if (newReview.photos.length + files.length > 4) {
+      toast({ title: 'Maximum 4 photos', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    const token = localStorage.getItem('token');
+    
+    for (const file of files) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post(`${API}/reviews/upload-image`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        });
+        setNewReview(prev => ({ ...prev, photos: [...prev.photos, res.data.url] }));
+      } catch (err) {
+        toast({ title: 'Erreur upload', description: err.response?.data?.detail || 'Erreur', variant: 'destructive' });
+      }
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removePhoto = (idx) => {
+    setNewReview(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== idx) }));
+  };
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -61,9 +94,12 @@ const ProductReviews = ({ productId }) => {
     }
 
     try {
+      const token = localStorage.getItem('token');
       await axios.post(`${API}/reviews`, {
         product_id: productId,
         ...newReview
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       
       toast({
@@ -94,7 +130,10 @@ const ProductReviews = ({ productId }) => {
     }
 
     try {
-      await axios.post(`${API}/reviews/${reviewId}/helpful`);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API}/reviews/${reviewId}/helpful`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       fetchReviews();
     } catch (error) {
       console.error('Error marking helpful:', error);
@@ -164,6 +203,44 @@ const ProductReviews = ({ productId }) => {
                 onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 h-32"
                 required
+              />
+            </div>
+
+            {/* Photo Upload */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Photos (max 4)</label>
+              <div className="flex flex-wrap gap-3">
+                {newReview.photos.map((photo, idx) => (
+                  <div key={idx} className="relative w-20 h-20 group">
+                    <img src={`${BACKEND_URL}${photo}`} alt="" className="w-full h-full object-cover rounded-lg border" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(idx)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                {newReview.photos.length < 4 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-green-400 hover:text-green-500 transition"
+                    data-testid="upload-review-photo"
+                  >
+                    {uploading ? <Loader2 size={20} className="animate-spin" /> : <><Camera size={20} /><span className="text-[10px] mt-1">Ajouter</span></>}
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageUpload}
+                className="hidden"
               />
             </div>
             
@@ -256,9 +333,9 @@ const ProductReviews = ({ productId }) => {
                   {review.photos.map((photo, idx) => (
                     <img
                       key={idx}
-                      src={photo}
+                      src={photo.startsWith('http') ? photo : `${BACKEND_URL}${photo}`}
                       alt="Review"
-                      className="w-20 h-20 object-cover rounded-lg"
+                      className="w-20 h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
                     />
                   ))}
                 </div>
