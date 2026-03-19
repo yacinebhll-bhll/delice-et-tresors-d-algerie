@@ -70,6 +70,7 @@ Application e-commerce full-stack pour vendre des produits algériens (dattes, h
 - Added search bar with real-time search functionality
 - Backend search endpoint updated to support text search across product names and descriptions
 - Category selector syncs with sidebar filters
+- **Hero Carousel**: Added 4 beautiful AI-generated hero slides (Dattes, Huile d'Olive, Épices, Artisanat) with titles, descriptions and CTAs in 3 languages
 
 ## Credentials
 - Admin: yacbhll@gmail.com / Mazi@go
