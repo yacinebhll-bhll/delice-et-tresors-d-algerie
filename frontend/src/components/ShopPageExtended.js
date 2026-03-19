@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../App';
 import { 
   ShoppingCart, Search, Heart, Star, 
@@ -37,6 +37,7 @@ const DEFAULT_COLOR = { bg: 'bg-green-50', border: 'border-green-400', text: 'te
 
 const ShopPageExtended = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { language } = useLanguage();
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
@@ -51,6 +52,14 @@ const ShopPageExtended = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Read category from URL on mount
+  useEffect(() => {
+    const urlCategory = searchParams.get('category');
+    if (urlCategory && urlCategory !== filters.category) {
+      updateFilter('category', urlCategory);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProducts();
